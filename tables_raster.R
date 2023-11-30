@@ -12,6 +12,7 @@ archivos <- list.files("B:/ALEJANDRA/TABLAS/SALIDA_2/", full.names = T, pattern 
 arc <- list.files("B:/ALEJANDRA/TABLAS/SALIDA_2/",  pattern = "\\.dbf$")
 arc <- gsub("\\..*","",arc)
 
+#Variables
 for (i in 1:length(archivos)){#length(archivos)
   kk <- read.dbf(archivos[i])
   colnames(kk) <-  c("FID",  "COUNT", "AREA",  "MEAN")
@@ -26,9 +27,9 @@ write_csv2(kk, "B:/ALEJANDRA/A_RESULTADOS/all_variables_grid_realm.csv" )
 for (i in 1:length(archivos)){
   kk <- read.dbf(archivos[i])
   colnames(kk) <-  c("FID",  "COUNT", "AREA",  "MEAN")
-  kk <- merge(grid, SOIL_FAO_GRID, by.x="CODE", by.y="FID_", all.x = TRUE)
-  pp <- select(kk, Lat, Long, DOMSOI)
-  rasterized <- rasterize(pp, terra::rast(resolution = 0.0083, crs = "+proj=longlat +datum=WGS84"), pp$DOMSOI)
+  kk <- merge(grid, a, by.x="CODE", by.y="CODE", all.x = TRUE)
+  pp <- select(kk, Lat, Long, REALM)
+  rasterized <- rasterize(pp, terra::rast(resolution = 0.0083, crs = "+proj=longlat +datum=WGS84"), pp$REALM)
   writeRaster(rasterized, paste0("B:/ALEJANDRA/TABLAS/RASTER_2/", arc[i], ".tif"))
 }
 
@@ -89,18 +90,19 @@ rm(a)
 SOIL_FAO_GRID <- read.dbf("B:/ALEJANDRA/SOIL_CLASS/soil_FAO_grid.dbf")
 
 cl <- read_csv("B:/ALEJANDRA/SOIL_CLASS/classes_soil.csv")
-cl <- unique(classes_soil$DOMSOI)
+cl <- unique(cl$DOMSOI)
 cl <- as.data.frame(sort(cl, decreasing = F))
 cl <- cbind(cl, "FAO_number"=1:nrow(cl))
 colnames(cl) <- c("DOMSOI", "SOIL_CODE")
-rm(classes_soil)
+
 
 SOIL_FAO_GRID <- left_join(SOIL_FAO_GRID, cl, by = c("MAJORITY" = "SOIL_CODE"))
 SOIL_FAO_GRID <- filter(SOIL_FAO_GRID, SOIL_FAO_GRID$MAJORITY>=1)
 SOIL_FAO_GRID <- as.data.frame(SOIL_FAO_GRID[,c(1,5)])
-colnames(SOIL_FAO_GRID) <- c("FID", "SOIL")
+colnames(SOIL_FAO_GRID) <- c("CODE", "SOIL")
+SOIL_FAO_GRID$SOIL <- as.factor(SOIL_FAO_GRID$SOIL)
 
-kk <- left_join(grid, SOIL_FAO_GRID, by = c("CODE" = "FID"))
+kk <- left_join(grid, SOIL_FAO_GRID, by = c("CODE" = "CODE"))
 
 kk <- merge(grid, SOIL_FAO_GRID, by.x="CODE", by.y="FID", all.x = TRUE)
 pp <- select(kk, Lat, Long, SOIL)
@@ -114,7 +116,7 @@ r.cont = terra::rast(e.cont)
 rasterized <- terra::rasterize(pp, r.cont, pp$SOIL)
 
 rasterized <- rasterize(pp, terra::rast(resolution = 0.083, crs = "+proj=longlat +datum=WGS84"), pp$SOIL)
-writeRaster(rasterized, paste0("B:/ALEJANDRA/TABLAS/RASTER_2/", arc[i], ".tif"))
+writeRaster(rasterized, "B:/ALEJANDRA/TABLAS/RASTER_2/soil.tif")
 mm <- rast(grid$geometry)
 summary(mm)
 
