@@ -98,13 +98,13 @@ colnames(cl) <- c("DOMSOI", "SOIL_CODE")
 
 SOIL_FAO_GRID <- left_join(SOIL_FAO_GRID, cl, by = c("MAJORITY" = "SOIL_CODE"))
 SOIL_FAO_GRID <- filter(SOIL_FAO_GRID, SOIL_FAO_GRID$MAJORITY>=1)
-SOIL_FAO_GRID <- as.data.frame(SOIL_FAO_GRID[,c(1,5)])
+SOIL_FAO_GRID <- as.data.frame(SOIL_FAO_GRID[,c(1,4)])
 colnames(SOIL_FAO_GRID) <- c("CODE", "SOIL")
 SOIL_FAO_GRID$SOIL <- as.factor(SOIL_FAO_GRID$SOIL)
 
 kk <- left_join(grid, SOIL_FAO_GRID, by = c("CODE" = "CODE"))
 
-kk <- merge(grid, SOIL_FAO_GRID, by.x="CODE", by.y="FID", all.x = TRUE)
+kk <- merge(grid, SOIL_FAO_GRID, by.x="CODE", by.y="CODE", all.x = TRUE)
 pp <- select(kk, Lat, Long, SOIL)
 
 #define non-uniform spatial extent
@@ -115,10 +115,15 @@ r.cont = terra::rast(e.cont)
 
 rasterized <- terra::rasterize(pp, r.cont, pp$SOIL)
 
-rasterized <- rasterize(pp, terra::rast(resolution = 0.083, crs = "+proj=longlat +datum=WGS84"), pp$SOIL)
-writeRaster(rasterized, "B:/ALEJANDRA/TABLAS/RASTER_2/soil.tif")
+rasterized <- rasterize(pp, terra::rast(resolution = 0.0083, crs = "+proj=longlat +datum=WGS84"), pp$SOIL)
+writeRaster(rasterized, "B:/ALEJANDRA/TABLAS/RASTER_2/soil_FAO_2.tif")
 mm <- rast(grid$geometry)
 summary(mm)
 
 variables <- left_join(variables, SOIL_FAO_GRID, by = c("CODE" = "FID_"))
-write.csv2(variables, "B:/ALEJANDRA/A_RESULTADOS/all_variables_grid_realm.csv")
+write.csv2(cl, "B:/ALEJANDRA/A_RESULTADOS/cl.csv")
+
+a <- rast("B:/ALEJANDRA/TABLAS/RASTER_2/soil_FAO_2.tif")
+b <- rast("B:/ALEJANDRA/TABLAS/RASTER_2/chelsa_bio5_1981_2010.tif")
+p <- c(a,b)
+plot(p)
