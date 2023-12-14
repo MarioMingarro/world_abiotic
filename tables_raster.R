@@ -6,10 +6,10 @@ library(sf)
 library(writexl)
 library(terra)
 
-grid <- sf::read_sf("B:/ALEJANDRA/grid10km/grid_10km_PORC_LAKES_WGS84_25.shp")
+grid <- sf::read_sf("B:/ALEJANDRA/SDM_PLANTS/grid10km/grid_10km_PORC_LAKES_WGS84_25.shp")
 
-archivos <- list.files("B:/ALEJANDRA/TABLAS/SALIDA_2/", full.names = T, pattern = "\\.dbf$")
-arc <- list.files("B:/ALEJANDRA/TABLAS/SALIDA_2/",  pattern = "\\.dbf$")
+archivos <- list.files("B:/ALEJANDRA/SDM_PLANTS/TABLAS/SALIDA/", full.names = T, pattern = "\\.dbf$")
+arc <- list.files("B:/ALEJANDRA/SDM_PLANTS/TABLAS/SALIDA/",  pattern = "\\.dbf$")
 arc <- gsub("\\..*","",arc)
 
 #Variables
@@ -27,13 +27,13 @@ write_csv2(kk, "B:/ALEJANDRA/A_RESULTADOS/all_variables_grid_realm.csv" )
 for (i in 1:length(archivos)){
   kk <- read.dbf(archivos[i])
   colnames(kk) <-  c("FID",  "COUNT", "AREA",  "MEAN")
-  kk <- merge(grid, a, by.x="CODE", by.y="CODE", all.x = TRUE)
-  pp <- select(kk, Lat, Long, REALM)
-  rasterized <- rasterize(pp, terra::rast(resolution = 0.0083, crs = "+proj=longlat +datum=WGS84"), pp$REALM)
-  writeRaster(rasterized, paste0("B:/ALEJANDRA/TABLAS/RASTER_2/", arc[i], ".tif"))
+  kk <- merge(grid, kk, by.x="CODE", by.y="FID", all.x = TRUE)
+  pp <- select(kk, Lat, Long, MEAN)
+  rasterized <- rasterize(pp, terra::rast(resolution = 0.08983, crs = "+proj=longlat +datum=WGS84"), pp$MEAN)
+  writeRaster(rasterized, paste0("B:/ALEJANDRA/SDM_PLANTS/TABLAS/KK/", arc[i], ".tif"))
 }
 
-writeRaster(rasterized, "B:/ALEJANDRA/TABLAS/RASTER_2/REALM.tif")
+writeRaster(rasterized, "B:/ALEJANDRA/SDM_PLANTS/TABLAS/RASTER_2/REALM.tif")
 
 sum(is.na(grid$chelsa_ai_1981_2010))
 raster <- list.files("B:/ALEJANDRA/TABLAS/RASTER_2/", full.names = T)
