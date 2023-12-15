@@ -5,6 +5,13 @@ library(tidyverse)
 library(sf)
 library(writexl)
 library(terra)
+library(stars)
+
+grid_test <- sf::read_sf("A:/sel.shp")
+pp <- select(grid_test, Lat, Long, CODE)
+rasterized <- st_rasterize(grid_test)
+writeRaster(rasterized, paste0("A:/test1.tif"))
+write_stars(rasterized, "A:/test1.tif")
 
 grid <- sf::read_sf("B:/ALEJANDRA/SDM_PLANTS/grid10km/grid_10km_PORC_LAKES_WGS84_25.shp")
 
@@ -19,9 +26,38 @@ for (i in 1:length(archivos)){#length(archivos)
   kk <- select(kk, FID, MEAN)
   colnames(kk) <- c("FID",paste0(arc[i]))
   grid <- merge(grid, kk,all.x = TRUE, by.x="CODE", by.y="FID")
-  
 }
-write_csv2(kk, "B:/ALEJANDRA/A_RESULTADOS/all_variables_grid_realm.csv" )
+kk <- as.data.frame(colnames(variables))
+
+variables <-  read_delim("B:/ALEJANDRA/SDM_PLANTS/A_RESULTADOS/all_variables_grid_realm_soil.csv",
+                         delim = ";",
+                         escape_double = FALSE,
+                         locale = locale(decimal_mark = ",",
+                                         grouping_mark = ""),
+                         trim_ws = TRUE)
+kk <- head(variables, n = 50)
+variables <- variables[, -82]
+variables_1 <- variables[,1:81]
+variables_2 <- variables[,82:83]
+
+variables_1[is.na(variables_1)] <- -99999
+variables_3 <- cbind(variables_1, variables_2)
+
+write_csv2(variables_3, "B:/ALEJANDRA/SDM_PLANTS/RASTER_10KM/variables.csv")
+
+puntos <- variables %>% 
+  st_as_sf(coords = c('Long', 'Lat')) %>%
+  st_set_crs(4326)
+
+colnames(puntos[, 1:78]) <- seq(1, 79, 1)
+st_write(puntos,"B:/ALEJANDRA/SDM_PLANTS/RASTER_10KM/puntos_kk.shp" )
+
+
+
+
+
+
+
 
 # Raster creation
 for (i in 1:length(archivos)){
@@ -29,9 +65,11 @@ for (i in 1:length(archivos)){
   colnames(kk) <-  c("FID",  "COUNT", "AREA",  "MEAN")
   kk <- merge(grid, kk, by.x="CODE", by.y="FID", all.x = TRUE)
   pp <- select(kk, Lat, Long, MEAN)
-  rasterized <- rasterize(pp, terra::rast(resolution = 0.08983, crs = "+proj=longlat +datum=WGS84"), pp$MEAN)
-  writeRaster(rasterized, paste0("B:/ALEJANDRA/SDM_PLANTS/TABLAS/KK/", arc[i], ".tif"))
+  rasterize_kk <- st_rasterize(pp )
+  write_stars(rasterized, paste0("B:/ALEJANDRA/SDM_PLANTS/RASTER_10KM/", arc[i], ".tif"))
 }
+rasterized_2 = as(rasterized, "Raster")
+writeRaster(rasterized_2, "A:/test24.tif")
 
 writeRaster(rasterized, "B:/ALEJANDRA/SDM_PLANTS/TABLAS/RASTER_2/REALM.tif")
 
@@ -49,7 +87,7 @@ mm <- terra::focalPairs(d, w=5, "pearson", na.rm=TRUE)
 
 
 
-variables <-  read_delim("B:/ALEJANDRA/A_RESULTADOS/all_variables_grid_realm.csv",
+variables <-  read_delim("B:/ALEJANDRA/SDM_PLANTS/A_RESULTADOS/all_variables_grid_realm_soil.csv",
                          delim = ";",
                          escape_double = FALSE,
                          locale = locale(decimal_mark = ",",
