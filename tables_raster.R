@@ -165,3 +165,57 @@ a <- rast("B:/ALEJANDRA/TABLAS/RASTER_2/soil_FAO_2.tif")
 b <- rast("B:/ALEJANDRA/TABLAS/RASTER_2/chelsa_bio5_1981_2010.tif")
 p <- c(a,b)
 plot(p)
+
+
+
+
+library(readr)
+library(foreign)
+library(raster)
+library(tidyverse)
+library(sf)
+library(terra)
+library(fasterize)
+
+variables <- sf::read_sf("B:/ALEJANDRA/SDM_PLANTS/RASTER_10KM/variables_homo.shp")
+names(variables) <-              c("...1",   "CODE",       "area",       "Lat" ,       "Long" ,      "PORCENTAJE" ,"AREA_2",    
+                                   "ai_v3_yr"                        ,"chelsa_ai_1981_2010"              ,"chelsa_bio1_1981_2010"           ,"chelsa_bio10_1981_2010"          
+                                   ,"chelsa_bio11_1981_2010"          ,"chelsa_bio12_1981_2010"           ,"chelsa_bio13_1981_2010"          ,"chelsa_bio14_1981_2010"          
+                                   ,"chelsa_bio15_1981_2010"          ,"chelsa_bio16_1981_2010"           ,"chelsa_bio17_1981_2010"          ,"chelsa_bio18_1981_2010"          
+                                   ,"chelsa_bio19_1981_2010"          ,"chelsa_bio2_1981_2010"            ,"chelsa_bio3_1981_2010"           ,"chelsa_bio4_1981_2010"           
+                                   ,"chelsa_bio5_1981_2010"           ,"chelsa_bio6_1981_2010"            ,"chelsa_bio7_1981_2010"           ,"chelsa_bio8_1981_2010"           
+                                   ,"chelsa_bio9_1981_2010"           ,"chelsa_clt_mean_1981_2010"        ,"chelsa_cmi_mean_1981_2010"       ,"chelsa_fcf_1981_2010"            
+                                   ,"chelsa_fgd_1981_2010"            ,"chelsa_gdd0_1981_2010"            ,"chelsa_gdd10_1981_2010"          ,"chelsa_gdd5_1981_2010"           
+                                   ,"chelsa_gddlgd0_1981_2010"        ,"chelsa_gddlgd10_1981_2010"        ,"chelsa_gddlgd5_1981_2010"        ,"chelsa_gdgfgd0_1981_2010"        
+                                   ,"chelsa_gdgfgd10_1981_2010"       ,"chelsa_gdgfgd5_1981_2010"         ,"chelsa_gsp_1981_2010"            ,"chelsa_gst_1981_2010"            
+                                   ,"chelsa_hurs_1981_2010"           ,"chelsa_kg0_1981_2010"             ,"chelsa_kg1_1981_2010"            ,"chelsa_kg2_1981_2010"            
+                                   ,"chelsa_kg3_1981_2010"            ,"chelsa_kg4_1981_2010"             ,"chelsa_kg5_1981_2010"            ,"chelsa_lgd_1981_2010"            
+                                   ,"chelsa_ngd0_1981_2010"           ,"chelsa_ngd10_1981_2010"           ,"chelsa_ngd5_1981_2010"           ,"chelsa_npp_1981_2010"            
+                                   ,"chelsa_pet_penman_mean_1981_2010","chelsa_rsds_1981_2010"            ,"chelsa_scd_1981_2010"            ,"chelsa_sfcwind_mean_1981_2010"   
+                                   ,"chelsa_swb_1981_2010"            ,"chelsa_swe_1981_2010"             ,"chelsa_vpd_mean_1981_2010"       ,"dem_aspect"                      
+                                   ,"dem_elevation"                   ,"dem_slope"                        ,"et0_v3_yr"                       ,"isric_wv0010_0_15cm_1000"        
+                                   ,"isric_wv0033_0_15cm_1000"        ,"isric_wv1500_0_15cm_1000"         ,"soilgrid_bdod"                   ,"soilgrid_cec"                    
+                                   ,"soilgrid_cfvo"                   ,"soilgrid_clay"                    ,"soilgrid_nitrogen"               ,"soilgrid_ocd"                    
+                                   ,"soilgrid_phh2o"                  ,"soilgrid_sand"                    ,"soilgrid_silt"                   ,"soilgrid_soc"                    
+                                   ,"solar_max"                       ,"solar_min", "realm", "fao_soil", "geometry")  
+
+template <- rast("B:/ALEJANDRA/SDM_PLANTS/RASTER_10KM/template.tif")
+
+archivos <- list.files("B:/ALEJANDRA/SDM_PLANTS/TABLAS/SALIDA/", full.names = T, pattern = "\\.dbf$")
+arc <- list.files("B:/ALEJANDRA/SDM_PLANTS/TABLAS/SALIDA/",  pattern = "\\.dbf$")
+arc <- gsub("\\..*","",arc)
+
+for(i in 1:81){
+  a <- terra::rasterize(variables, template, field = variables[82])
+  a <- classify(a, cbind(-99999, NA))
+  writeRaster(a, paste0("B:/ALEJANDRA/SDM_PLANTS/RASTER_10KM/", variables[82], "2.tif"))
+}
+
+variables$chelsa_fcf
+i=1
+st_crs(variables)
+juntos <- c(rast("B:/ALEJANDRA/SDM_PLANTS/RASTER_10KM/RASTER/chelsa_bio3_1981_2010.tif"),
+            rast("B:/ALEJANDRA/SDM_PLANTS/RASTER_10KM/RASTER/chelsa_gdgfgd10_1981_2010.tif"))
+terra::plot(juntos)
+
+chelsa_gdgfgd10_1981_2010.tif
