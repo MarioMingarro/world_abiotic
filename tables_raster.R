@@ -219,3 +219,21 @@ juntos <- c(rast("B:/ALEJANDRA/SDM_PLANTS/RASTER_10KM/RASTER/chelsa_bio3_1981_20
 terra::plot(juntos)
 
 chelsa_gdgfgd10_1981_2010.tif
+library(terra)
+a <- rast("A:/ai_v3_yr.tif")
+b <- project(a, "+proj=longlat +datum=WGS84")
+plot(a)
+plot(b)
+
+
+
+archivos <- list.files("B:/ALEJANDRA/SDM_PLANTS/RASTER_10KM/RASTER", full.names = T, pattern = "\\.tif$")
+arc <- list.files("B:/ALEJANDRA/SDM_PLANTS/RASTER_10KM/RASTER", pattern = "\\.tif$")
+arc <- gsub("\\..*","",arc)
+
+for (i in 1:length(archivos)){
+  a <- rast(archivos[i])
+  a <- project(a, "+proj=longlat +datum=WGS84")
+  writeRaster(a, paste0("B:/ALEJANDRA/SDM_PLANTS/RASTER_10KM_WGS84/", arc[i], "_WGS84.tif"))
+}
+            
